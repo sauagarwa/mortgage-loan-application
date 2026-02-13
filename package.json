@@ -1,7 +1,7 @@
 {
-  "name": "ai-quickstart-template",
+  "name": "mortgage-ai",
   "version": "0.1.0",
-  "description": "A ready-made template for creating new AI Quickstarts",
+  "description": "AI-powered mortgage loan origination and approval platform",
   "private": true,
   "workspaces": [
     "packages/*"

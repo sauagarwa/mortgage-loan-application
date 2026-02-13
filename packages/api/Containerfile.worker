@@ -1,0 +1,54 @@
+# Multi-stage build for Celery worker
+# Stage 1: Build dependencies
+FROM python:3.11-slim AS builder
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Set working directory
+WORKDIR /app
+
+# Copy API package files
+COPY packages/api/pyproject.toml ./packages/api/
+COPY packages/api/src/ ./packages/api/src/
+# Copy DB package (API depends on it)
+COPY packages/db/ ./packages/db/
+
+# Change to API directory for installation
+WORKDIR /app/packages/api
+
+# Install dependencies
+RUN uv pip install --system -e . || pip install -e .
+
+# Stage 2: Runtime
+FROM python:3.11-slim AS runtime
+
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy application source
+COPY packages/api/src/ ./packages/api/src/
+COPY packages/api/pyproject.toml ./packages/api/
+
+# Set working directory to API package
+WORKDIR /app/packages/api
+
+# Set ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Health check — verify celery worker is responding
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD celery -A src.worker.celery_app inspect ping --timeout 5 || exit 1
+
+# Run the Celery worker
+CMD ["celery", "-A", "src.worker.celery_app", "worker", "--loglevel=info", "--concurrency=4", "-Q", "default,documents,risk"]

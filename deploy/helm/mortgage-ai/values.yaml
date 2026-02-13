@@ -1,0 +1,233 @@
+# Default values for mortgage-ai
+global:
+  imageRegistry: quay.io
+  imageRepository: mortgage-ai
+  imageTag: latest
+  imagePullPolicy: Always
+  storageClass: ""
+
+# Secrets configuration - these values should be overridden with actual secrets
+secrets:
+  # Database secrets
+  POSTGRES_DB: "mortgage-ai"
+  POSTGRES_USER: "user"
+  POSTGRES_PASSWORD: "changeme"
+
+  # API secrets
+  DATABASE_URL: "postgresql+asyncpg://user:changeme@mortgage-ai-db:5432/mortgage-ai"
+  DEBUG: "false"
+  ALLOWED_HOSTS: '["*"]'
+
+  # Redis
+  REDIS_URL: "redis://mortgage-ai-redis:6379/0"
+
+  # MinIO
+  MINIO_ENDPOINT: "mortgage-ai-minio:9000"
+  MINIO_ACCESS_KEY: "minioadmin"
+  MINIO_SECRET_KEY: "changeme"
+  MINIO_BUCKET: "mortgage-documents"
+
+  # Keycloak
+  KEYCLOAK_SERVER_URL: "http://keycloak:8080"
+  KEYCLOAK_REALM: "mortgage-ai"
+  KEYCLOAK_CLIENT_ID: "mortgage-ai-api"
+
+  # LLM (optional)
+  LLM_API_KEY: ""
+  LLM_PROVIDER: "openai"
+  LLM_BASE_URL: "https://api.openai.com/v1"
+  LLM_MODEL: "gpt-4o"
+
+  # UI secrets
+  VITE_API_BASE_URL: "http://localhost:8000"
+  VITE_ENVIRONMENT: "production"
+# OpenShift Routes configuration
+routes:
+  enabled: true
+  annotations: {}
+  sharedHost: ""  # Set custom hostname or leave empty (will use ui.host fallback)
+  ui:
+    host: ""  # Used as fallback if sharedHost is empty
+    tls:
+      enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+  api:
+    host: ""  # Ignored - uses sharedHost or ui.host
+    tls:
+      enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+
+# API configuration
+api:
+  enabled: true
+  name: mortgage-ai-api
+  image:
+    repository: mortgage-ai-api
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 8000
+  replicas: 1
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+  healthCheck:
+    enabled: true
+    path: /health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+# UI configuration
+ui:
+  enabled: true
+  name: mortgage-ai-ui
+  image:
+    repository: mortgage-ai-ui
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 8080
+  replicas: 1
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+  healthCheck:
+    enabled: true
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 10
+# Database configuration
+database:
+  enabled: true
+  name: mortgage-ai-db
+  image:
+    repository: pgvector/pgvector
+    tag: pg16
+  service:
+    type: ClusterIP
+    port: 5432
+  persistence:
+    enabled: true
+    size: 10Gi
+    accessMode: ReadWriteOnce
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+# Celery worker configuration
+worker:
+  enabled: true
+  name: mortgage-ai-worker
+  image:
+    repository: mortgage-ai-worker
+    tag: latest
+  replicas: 1
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+# Redis configuration
+redis:
+  enabled: true
+  name: mortgage-ai-redis
+  image:
+    repository: redis
+    tag: 7-alpine
+  service:
+    type: ClusterIP
+    port: 6379
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  healthCheck:
+    enabled: true
+
+# MinIO object storage configuration
+minio:
+  enabled: true
+  name: mortgage-ai-minio
+  image:
+    repository: minio/minio
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 9000
+  persistence:
+    enabled: true
+    size: 20Gi
+    accessMode: ReadWriteOnce
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  healthCheck:
+    enabled: true
+
+# Database migration configuration
+migration:
+  enabled: true
+  name: mortgage-ai-migration
+  image:
+    repository: mortgage-ai-db
+    tag: latest
+  restartPolicy: Never
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+# ServiceAccount
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod Security Context
+podSecurityContext: {}
+
+# Security Context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}

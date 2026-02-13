@@ -6,6 +6,8 @@ import './styles/globals.css'
 import { ThemeProvider } from './components/theme-provider/theme-provider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from './components/atoms/tooltip/tooltip.tsx'
+import { AuthProvider } from './auth/auth-provider'
+
 const queryClient = new QueryClient();
 const router = createRouter({ routeTree })
 
@@ -17,12 +19,14 @@ declare module '@tanstack/react-router' {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <TooltipProvider>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-        </QueryClientProvider>
-      </TooltipProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+          </QueryClientProvider>
+        </TooltipProvider>
+      </ThemeProvider>
+    </AuthProvider>
   </React.StrictMode>,
 )

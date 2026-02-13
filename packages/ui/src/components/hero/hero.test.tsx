@@ -10,6 +10,6 @@ describe('Hero', () => {
 
   it('renders the template name', () => {
     render(<Hero />);
-    expect(screen.getByText(/AI QuickStart Template/i)).toBeInTheDocument();
+    expect(screen.getByText(/MortgageAI Template/i)).toBeInTheDocument();
   });
 });

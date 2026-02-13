@@ -1,9 +1,9 @@
 {
-  "name": "@ai-quickstart-template/ui",
+  "name": "@mortgage-ai/ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "prettier": "@ai-quickstart-template/prettier-config",
+  "prettier": "@mortgage-ai/prettier-config",
   "scripts": {
     "dev:vite": "vite",
     "dev:storybook": "storybook dev -p 6006 --no-open",
@@ -34,11 +34,12 @@
     "lucide-react": "^0.378.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
+    "keycloak-js": "^26.0.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@ai-quickstart-template/eslint-config": "workspace:*",
-    "@ai-quickstart-template/prettier-config": "workspace:*",
+    "@mortgage-ai/eslint-config": "workspace:*",
+    "@mortgage-ai/prettier-config": "workspace:*",
     "vitest": "^4.0.8",
     "@testing-library/react": "^16.3.0",
     "@testing-library/jest-dom": "^6.4.2",

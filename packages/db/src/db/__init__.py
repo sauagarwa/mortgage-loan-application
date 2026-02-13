@@ -1,7 +1,36 @@
-__version__ = "0.0.0"
+__version__ = "0.1.0"
 
 # Export main database classes and functions
-from .database import DatabaseService, get_db_service, get_db, Base
-from .models import Dog
+from .database import Base, DatabaseService, get_db, get_db_service
+from .models import (
+    Application,
+    AuditLog,
+    Decision,
+    Document,
+    InfoRequest,
+    LLMConfig,
+    LoanProduct,
+    Notification,
+    RiskAssessment,
+    RiskDimensionScore,
+    User,
+)
 
-__all__ = ["DatabaseService", "get_db_service", "get_db", "Base", "Dog", "__version__"]
+__all__ = [
+    "DatabaseService",
+    "get_db_service",
+    "get_db",
+    "Base",
+    "User",
+    "LoanProduct",
+    "Application",
+    "Document",
+    "RiskAssessment",
+    "RiskDimensionScore",
+    "Decision",
+    "InfoRequest",
+    "LLMConfig",
+    "AuditLog",
+    "Notification",
+    "__version__",
+]

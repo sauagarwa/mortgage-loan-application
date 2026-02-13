@@ -9,10 +9,10 @@ export function Hero() {
       </div>
       <div className="relative z-10 flex flex-col gap-3">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Welcome to the AI QuickStart Template!
+          Welcome to the MortgageAI Template!
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-          This template has everything you need to develop your own AI QuickStart quickly and easily. Check out our documentation for instructions on how to get started.
+          This template has everything you need to develop your own MortgageAI quickly and easily. Check out our documentation for instructions on how to get started.
         </p>
       </div>
     </section>
