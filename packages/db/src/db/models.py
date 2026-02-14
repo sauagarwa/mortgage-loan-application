@@ -142,6 +142,9 @@ class Application(Base):
         "Document", back_populates="application", cascade="all, delete-orphan"
     )
     risk_assessments = relationship("RiskAssessment", back_populates="application")
+    credit_reports = relationship(
+        "CreditReport", back_populates="application", cascade="all, delete-orphan"
+    )
     decision = relationship("Decision", back_populates="application", uselist=False)
     info_requests = relationship("InfoRequest", back_populates="application")
     notifications = relationship("Notification", back_populates="application")
@@ -376,6 +379,61 @@ class LLMConfig(Base):
         return (
             f"<LLMConfig(provider='{self.provider}', active={self.is_active}, "
             f"default={self.is_default})>"
+        )
+
+
+class CreditReport(Base):
+    """Simulated credit bureau report for an application."""
+
+    __tablename__ = "credit_report"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
+    application_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("application.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Credit score
+    credit_score = Column(Integer, nullable=False)
+    score_model = Column(String(50), nullable=False, default="FICO 8")
+    score_factors = Column(JSONB, nullable=False, server_default="[]")
+
+    # Tradeline and account data (JSONB arrays)
+    tradelines = Column(JSONB, nullable=False, server_default="[]")
+    public_records = Column(JSONB, nullable=False, server_default="[]")
+    inquiries = Column(JSONB, nullable=False, server_default="[]")
+    collections = Column(JSONB, nullable=False, server_default="[]")
+
+    # Summary metrics
+    total_accounts = Column(Integer, nullable=False, default=0)
+    open_accounts = Column(Integer, nullable=False, default=0)
+    credit_utilization = Column(Numeric(5, 2), nullable=True)
+    oldest_account_months = Column(Integer, nullable=True)
+    avg_account_age_months = Column(Integer, nullable=True)
+
+    # Payment history
+    on_time_payments_pct = Column(Numeric(5, 2), nullable=True)
+    late_payments_30d = Column(Integer, nullable=False, default=0)
+    late_payments_60d = Column(Integer, nullable=False, default=0)
+    late_payments_90d = Column(Integer, nullable=False, default=0)
+
+    # Fraud indicators
+    fraud_alerts = Column(JSONB, nullable=False, server_default="[]")
+    fraud_score = Column(Integer, nullable=False, default=0)
+
+    # Timestamps
+    pulled_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    # Relationships
+    application = relationship("Application", back_populates="credit_reports")
+
+    def __repr__(self):
+        return (
+            f"<CreditReport(id={self.id}, score={self.credit_score}, "
+            f"fraud_score={self.fraud_score})>"
         )
 
 

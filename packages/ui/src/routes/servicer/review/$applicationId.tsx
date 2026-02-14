@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useApplication } from '../../../hooks/applications';
 import { useRiskAssessment, useDecision, useCreateDecision } from '../../../hooks/decisions';
+import { useCreditReport } from '../../../hooks/credit-report';
 import { useDocuments } from '../../../hooks/documents';
 import { Badge } from '../../../components/atoms/badge/badge';
 import { Button } from '../../../components/atoms/button/button';
@@ -12,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/atoms/card/card';
+import { CreditReportCard } from '../../../components/credit-report/credit-report-card';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -43,6 +45,7 @@ function ServicerReviewPage() {
   const { data: app, isLoading: appLoading } = useApplication(applicationId);
   const { data: riskAssessment } = useRiskAssessment(applicationId);
   const { data: existingDecision } = useDecision(applicationId);
+  const { data: creditReport } = useCreditReport(applicationId);
   const { data: documents } = useDocuments(applicationId);
   const createDecision = useCreateDecision(applicationId);
 
@@ -312,6 +315,9 @@ function ServicerReviewPage() {
               </CardContent>
             </Card>
           ) : null}
+
+          {/* Credit Bureau Report */}
+          {creditReport && <CreditReportCard report={creditReport} />}
 
           {/* Applicant information cards */}
           <div className="grid gap-4 sm:grid-cols-2">

@@ -124,9 +124,13 @@ def run_pipeline(
             application = result.unique().scalar_one_or_none()
 
             if application:
+                credit_report_data = data.credit_report
                 for dim_name, scorer in DIMENSION_SCORERS.items():
                     try:
-                        scored = scorer(application)
+                        scored = scorer(
+                            application,
+                            credit_report_data=credit_report_data,
+                        )
                         weight = DIMENSION_WEIGHTS.get(dim_name, 0.1)
                         dimension_results.append(AgentResult(
                             dimension_name=dim_name,
@@ -160,41 +164,15 @@ def run_pipeline(
         f"total tokens: {total_tokens}"
     )
 
-    # Run aggregation
+    # Run aggregation (uses intelligent recommendation logic in both paths)
     aggregator = RiskAggregationAgent()
     if use_llm:
         aggregation_result = aggregator.aggregate(data, dimension_results)
     else:
-        # Simple weighted average fallback
-        total_weighted = sum(r.weighted_score for r in dimension_results if r.succeeded)
-        total_weight = sum(r.weight for r in dimension_results if r.succeeded)
-        overall = total_weighted / total_weight if total_weight > 0 else 50
-
-        if overall >= 80:
-            band, rec = "low", "approve"
-        elif overall >= 60:
-            band, rec = "medium", "review"
-        elif overall >= 40:
-            band, rec = "high", "review"
-        else:
-            band, rec = "critical", "deny"
-
-        all_risks = []
-        all_positives = []
-        for r in dimension_results:
-            all_risks.extend(r.risk_factors[:2])
-            all_positives.extend(r.positive_factors[:2])
-
-        aggregation_result = {
-            "overall_score": overall,
-            "risk_band": band,
-            "recommendation": rec,
-            "summary": f"Rule-based assessment. Weighted score: {overall:.1f}/100.",
-            "key_strengths": all_positives[:5],
-            "key_concerns": all_risks[:5],
-            "conditions": [],
-            "confidence": 0.6,
-        }
+        # Rule-based fallback with intelligent lending strategies
+        aggregation_result = aggregator._rule_based_aggregation(
+            dimension_results, data
+        )
 
     total_tokens += aggregation_result.get("tokens_used", 0)
     total_time = int((time.time() - start) * 1000)

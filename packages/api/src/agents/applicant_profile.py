@@ -8,7 +8,7 @@ from .base import ApplicationData, BaseAgent
 class ApplicantProfileAgent(BaseAgent):
     dimension_name = "applicant_profile"
     agent_name = "applicant_profile"
-    weight = 0.10
+    weight = 0.05
 
     def build_prompt(self, data: ApplicationData) -> list[dict[str, str]]:
         personal = data.personal_info

@@ -12,6 +12,7 @@ from sqlalchemy.orm import selectinload
 
 from db import (
     Application,
+    CreditReport,
     Decision,
     InfoRequest,
     Notification,
@@ -23,6 +24,14 @@ from db import (
 
 from ..core.security import TokenUser, get_current_user, require_role
 from ..services.websocket_manager import publish_event
+from ..schemas.credit_report import (
+    CreditReportResponse,
+    CollectionResponse,
+    FraudAlertResponse,
+    InquiryResponse,
+    PublicRecordResponse,
+    TradelineResponse,
+)
 from ..schemas.decisions import (
     DecisionCreate,
     DecisionResponse,
@@ -169,6 +178,69 @@ async def get_risk_assessment(
         dimensions=dimensions,
         conditions=ra.conditions or [],
         processing_metadata=processing_metadata,
+    )
+
+
+@router.get("/{application_id}/credit-report", response_model=CreditReportResponse)
+@require_role(["loan_servicer", "admin"])
+async def get_credit_report(
+    application_id: UUID,
+    user: TokenUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> CreditReportResponse:
+    """Get the credit bureau report for an application.
+
+    Only available to servicers and admins.
+    """
+    await _verify_application_access(application_id, user, session)
+
+    # Get latest credit report
+    result = await session.execute(
+        select(CreditReport)
+        .where(CreditReport.application_id == application_id)
+        .order_by(CreditReport.created_at.desc())
+        .limit(1)
+    )
+    cr = result.scalar_one_or_none()
+
+    if cr is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No credit report found for this application",
+        )
+
+    return CreditReportResponse(
+        id=str(cr.id),
+        application_id=str(cr.application_id),
+        credit_score=cr.credit_score,
+        score_model=cr.score_model,
+        score_factors=cr.score_factors or [],
+        tradelines=[
+            TradelineResponse(**t) for t in (cr.tradelines or [])
+        ],
+        public_records=[
+            PublicRecordResponse(**r) for r in (cr.public_records or [])
+        ],
+        inquiries=[
+            InquiryResponse(**i) for i in (cr.inquiries or [])
+        ],
+        collections=[
+            CollectionResponse(**c) for c in (cr.collections or [])
+        ],
+        fraud_alerts=[
+            FraudAlertResponse(**a) for a in (cr.fraud_alerts or [])
+        ],
+        fraud_score=cr.fraud_score,
+        total_accounts=cr.total_accounts,
+        open_accounts=cr.open_accounts,
+        credit_utilization=float(cr.credit_utilization) if cr.credit_utilization else None,
+        oldest_account_months=cr.oldest_account_months,
+        avg_account_age_months=cr.avg_account_age_months,
+        on_time_payments_pct=float(cr.on_time_payments_pct) if cr.on_time_payments_pct else None,
+        late_payments_30d=cr.late_payments_30d,
+        late_payments_60d=cr.late_payments_60d,
+        late_payments_90d=cr.late_payments_90d,
+        pulled_at=cr.pulled_at.isoformat() if cr.pulled_at else None,
     )
 
 
