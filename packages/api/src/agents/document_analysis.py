@@ -8,7 +8,7 @@ from .base import ApplicationData, BaseAgent
 class DocumentAnalysisAgent(BaseAgent):
     dimension_name = "document_quality"
     agent_name = "document_analysis"
-    weight = 0.10
+    weight = 0.05
 
     def build_prompt(self, data: ApplicationData) -> list[dict[str, str]]:
         # Categorize documents

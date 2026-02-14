@@ -8,7 +8,7 @@ from .base import ApplicationData, BaseAgent
 class FinancialHealthAgent(BaseAgent):
     dimension_name = "financial_health"
     agent_name = "financial_health"
-    weight = 0.15
+    weight = 0.12
 
     def build_prompt(self, data: ApplicationData) -> list[dict[str, str]]:
         financial = data.financial_info

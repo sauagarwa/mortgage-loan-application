@@ -70,6 +70,9 @@ class ApplicationData:
     # Documents
     documents: list[dict[str, Any]] = field(default_factory=list)
 
+    # Credit bureau report (populated during risk assessment)
+    credit_report: dict[str, Any] | None = None
+
     @classmethod
     def from_orm(cls, application, documents=None) -> "ApplicationData":
         """Build from SQLAlchemy Application model."""

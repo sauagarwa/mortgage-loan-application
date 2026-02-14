@@ -5,6 +5,7 @@ from .database import Base, DatabaseService, get_db, get_db_service
 from .models import (
     Application,
     AuditLog,
+    CreditReport,
     Decision,
     Document,
     InfoRequest,
@@ -27,6 +28,7 @@ __all__ = [
     "Document",
     "RiskAssessment",
     "RiskDimensionScore",
+    "CreditReport",
     "Decision",
     "InfoRequest",
     "LLMConfig",

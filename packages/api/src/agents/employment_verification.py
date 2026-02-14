@@ -8,7 +8,7 @@ from .base import ApplicationData, BaseAgent
 class EmploymentVerificationAgent(BaseAgent):
     dimension_name = "employment"
     agent_name = "employment_verification"
-    weight = 0.20
+    weight = 0.05
 
     def build_prompt(self, data: ApplicationData) -> list[dict[str, str]]:
         emp = data.employment_info

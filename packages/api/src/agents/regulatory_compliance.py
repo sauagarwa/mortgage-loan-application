@@ -8,7 +8,7 @@ from .base import ApplicationData, BaseAgent
 class RegulatoryComplianceAgent(BaseAgent):
     dimension_name = "regulatory_compliance"
     agent_name = "regulatory_compliance"
-    weight = 0.10
+    weight = 0.05
 
     def build_prompt(self, data: ApplicationData) -> list[dict[str, str]]:
         declarations = data.declarations

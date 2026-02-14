@@ -8,7 +8,7 @@ from .base import ApplicationData, BaseAgent
 class PropertyValuationAgent(BaseAgent):
     dimension_name = "property"
     agent_name = "property_valuation"
-    weight = 0.15
+    weight = 0.05
 
     def build_prompt(self, data: ApplicationData) -> list[dict[str, str]]:
         prop = data.property_info
