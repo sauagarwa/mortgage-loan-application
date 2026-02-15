@@ -437,6 +437,68 @@ class CreditReport(Base):
         )
 
 
+class Conversation(Base):
+    """Chat conversation for mortgage application."""
+
+    __tablename__ = "conversation"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
+    session_id = Column(String(100), unique=True, nullable=False, index=True)
+    application_id = Column(
+        UUID(as_uuid=True), ForeignKey("application.id"), nullable=True, index=True
+    )
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=True, index=True)
+    status = Column(String(30), nullable=False, default="active", index=True)
+    collected_data = Column(JSONB, nullable=False, server_default="{}")
+    current_phase = Column(String(50), nullable=False, default="greeting")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+    # Relationships
+    application = relationship("Application")
+    user = relationship("User")
+    messages = relationship(
+        "Message", back_populates="conversation", cascade="all, delete-orphan",
+        order_by="Message.created_at",
+    )
+
+    def __repr__(self):
+        return (
+            f"<Conversation(id={self.id}, session='{self.session_id}', "
+            f"phase='{self.current_phase}')>"
+        )
+
+
+class Message(Base):
+    """Individual message in a chat conversation."""
+
+    __tablename__ = "message"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=generate_uuid)
+    conversation_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("conversation.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    role = Column(String(20), nullable=False)
+    content = Column(Text, nullable=False, default="")
+    message_type = Column(String(30), nullable=False, default="text")
+    metadata_ = Column("metadata", JSONB, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    # Relationships
+    conversation = relationship("Conversation", back_populates="messages")
+
+    def __repr__(self):
+        return (
+            f"<Message(id={self.id}, role='{self.role}', "
+            f"type='{self.message_type}')>"
+        )
+
+
 class AuditLog(Base):
     """Immutable audit trail for all significant actions."""
 

@@ -9,38 +9,260 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ChatRouteImport } from './routes/chat'
+import { Route as AuditLogRouteImport } from './routes/audit-log'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ServicerIndexRouteImport } from './routes/servicer/index'
+import { Route as LoansIndexRouteImport } from './routes/loans/index'
+import { Route as ApplicationsIndexRouteImport } from './routes/applications/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as ServicerAnalyticsRouteImport } from './routes/servicer/analytics'
+import { Route as LoansLoanIdRouteImport } from './routes/loans/$loanId'
+import { Route as ApplicationsNewRouteImport } from './routes/applications/new'
+import { Route as ApplicationsApplicationIdRouteImport } from './routes/applications/$applicationId'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminLlmConfigRouteImport } from './routes/admin/llm-config'
+import { Route as AdminHealthRouteImport } from './routes/admin/health'
+import { Route as ServicerReviewApplicationIdRouteImport } from './routes/servicer/review/$applicationId'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditLogRoute = AuditLogRouteImport.update({
+  id: '/audit-log',
+  path: '/audit-log',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicerIndexRoute = ServicerIndexRouteImport.update({
+  id: '/servicer/',
+  path: '/servicer/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoansIndexRoute = LoansIndexRouteImport.update({
+  id: '/loans/',
+  path: '/loans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApplicationsIndexRoute = ApplicationsIndexRouteImport.update({
+  id: '/applications/',
+  path: '/applications/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicerAnalyticsRoute = ServicerAnalyticsRouteImport.update({
+  id: '/servicer/analytics',
+  path: '/servicer/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoansLoanIdRoute = LoansLoanIdRouteImport.update({
+  id: '/loans/$loanId',
+  path: '/loans/$loanId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApplicationsNewRoute = ApplicationsNewRouteImport.update({
+  id: '/applications/new',
+  path: '/applications/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApplicationsApplicationIdRoute =
+  ApplicationsApplicationIdRouteImport.update({
+    id: '/applications/$applicationId',
+    path: '/applications/$applicationId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLlmConfigRoute = AdminLlmConfigRouteImport.update({
+  id: '/admin/llm-config',
+  path: '/admin/llm-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminHealthRoute = AdminHealthRouteImport.update({
+  id: '/admin/health',
+  path: '/admin/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicerReviewApplicationIdRoute =
+  ServicerReviewApplicationIdRouteImport.update({
+    id: '/servicer/review/$applicationId',
+    path: '/servicer/review/$applicationId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
+  '/chat': typeof ChatRoute
+  '/dashboard': typeof DashboardRoute
+  '/admin/health': typeof AdminHealthRoute
+  '/admin/llm-config': typeof AdminLlmConfigRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/applications/$applicationId': typeof ApplicationsApplicationIdRoute
+  '/applications/new': typeof ApplicationsNewRoute
+  '/loans/$loanId': typeof LoansLoanIdRoute
+  '/servicer/analytics': typeof ServicerAnalyticsRoute
+  '/admin/': typeof AdminIndexRoute
+  '/applications/': typeof ApplicationsIndexRoute
+  '/loans/': typeof LoansIndexRoute
+  '/servicer/': typeof ServicerIndexRoute
+  '/servicer/review/$applicationId': typeof ServicerReviewApplicationIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
+  '/chat': typeof ChatRoute
+  '/dashboard': typeof DashboardRoute
+  '/admin/health': typeof AdminHealthRoute
+  '/admin/llm-config': typeof AdminLlmConfigRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/applications/$applicationId': typeof ApplicationsApplicationIdRoute
+  '/applications/new': typeof ApplicationsNewRoute
+  '/loans/$loanId': typeof LoansLoanIdRoute
+  '/servicer/analytics': typeof ServicerAnalyticsRoute
+  '/admin': typeof AdminIndexRoute
+  '/applications': typeof ApplicationsIndexRoute
+  '/loans': typeof LoansIndexRoute
+  '/servicer': typeof ServicerIndexRoute
+  '/servicer/review/$applicationId': typeof ServicerReviewApplicationIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
+  '/chat': typeof ChatRoute
+  '/dashboard': typeof DashboardRoute
+  '/admin/health': typeof AdminHealthRoute
+  '/admin/llm-config': typeof AdminLlmConfigRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/applications/$applicationId': typeof ApplicationsApplicationIdRoute
+  '/applications/new': typeof ApplicationsNewRoute
+  '/loans/$loanId': typeof LoansLoanIdRoute
+  '/servicer/analytics': typeof ServicerAnalyticsRoute
+  '/admin/': typeof AdminIndexRoute
+  '/applications/': typeof ApplicationsIndexRoute
+  '/loans/': typeof LoansIndexRoute
+  '/servicer/': typeof ServicerIndexRoute
+  '/servicer/review/$applicationId': typeof ServicerReviewApplicationIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/audit-log'
+    | '/chat'
+    | '/dashboard'
+    | '/admin/health'
+    | '/admin/llm-config'
+    | '/admin/users'
+    | '/applications/$applicationId'
+    | '/applications/new'
+    | '/loans/$loanId'
+    | '/servicer/analytics'
+    | '/admin/'
+    | '/applications/'
+    | '/loans/'
+    | '/servicer/'
+    | '/servicer/review/$applicationId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/audit-log'
+    | '/chat'
+    | '/dashboard'
+    | '/admin/health'
+    | '/admin/llm-config'
+    | '/admin/users'
+    | '/applications/$applicationId'
+    | '/applications/new'
+    | '/loans/$loanId'
+    | '/servicer/analytics'
+    | '/admin'
+    | '/applications'
+    | '/loans'
+    | '/servicer'
+    | '/servicer/review/$applicationId'
+  id:
+    | '__root__'
+    | '/'
+    | '/audit-log'
+    | '/chat'
+    | '/dashboard'
+    | '/admin/health'
+    | '/admin/llm-config'
+    | '/admin/users'
+    | '/applications/$applicationId'
+    | '/applications/new'
+    | '/loans/$loanId'
+    | '/servicer/analytics'
+    | '/admin/'
+    | '/applications/'
+    | '/loans/'
+    | '/servicer/'
+    | '/servicer/review/$applicationId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditLogRoute: typeof AuditLogRoute
+  ChatRoute: typeof ChatRoute
+  DashboardRoute: typeof DashboardRoute
+  AdminHealthRoute: typeof AdminHealthRoute
+  AdminLlmConfigRoute: typeof AdminLlmConfigRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  ApplicationsApplicationIdRoute: typeof ApplicationsApplicationIdRoute
+  ApplicationsNewRoute: typeof ApplicationsNewRoute
+  LoansLoanIdRoute: typeof LoansLoanIdRoute
+  ServicerAnalyticsRoute: typeof ServicerAnalyticsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  ApplicationsIndexRoute: typeof ApplicationsIndexRoute
+  LoansIndexRoute: typeof LoansIndexRoute
+  ServicerIndexRoute: typeof ServicerIndexRoute
+  ServicerReviewApplicationIdRoute: typeof ServicerReviewApplicationIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit-log': {
+      id: '/audit-log'
+      path: '/audit-log'
+      fullPath: '/audit-log'
+      preLoaderRoute: typeof AuditLogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +270,110 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/servicer/': {
+      id: '/servicer/'
+      path: '/servicer'
+      fullPath: '/servicer/'
+      preLoaderRoute: typeof ServicerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loans/': {
+      id: '/loans/'
+      path: '/loans'
+      fullPath: '/loans/'
+      preLoaderRoute: typeof LoansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/applications/': {
+      id: '/applications/'
+      path: '/applications'
+      fullPath: '/applications/'
+      preLoaderRoute: typeof ApplicationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/servicer/analytics': {
+      id: '/servicer/analytics'
+      path: '/servicer/analytics'
+      fullPath: '/servicer/analytics'
+      preLoaderRoute: typeof ServicerAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loans/$loanId': {
+      id: '/loans/$loanId'
+      path: '/loans/$loanId'
+      fullPath: '/loans/$loanId'
+      preLoaderRoute: typeof LoansLoanIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/applications/new': {
+      id: '/applications/new'
+      path: '/applications/new'
+      fullPath: '/applications/new'
+      preLoaderRoute: typeof ApplicationsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/applications/$applicationId': {
+      id: '/applications/$applicationId'
+      path: '/applications/$applicationId'
+      fullPath: '/applications/$applicationId'
+      preLoaderRoute: typeof ApplicationsApplicationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/llm-config': {
+      id: '/admin/llm-config'
+      path: '/admin/llm-config'
+      fullPath: '/admin/llm-config'
+      preLoaderRoute: typeof AdminLlmConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/health': {
+      id: '/admin/health'
+      path: '/admin/health'
+      fullPath: '/admin/health'
+      preLoaderRoute: typeof AdminHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/servicer/review/$applicationId': {
+      id: '/servicer/review/$applicationId'
+      path: '/servicer/review/$applicationId'
+      fullPath: '/servicer/review/$applicationId'
+      preLoaderRoute: typeof ServicerReviewApplicationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditLogRoute: AuditLogRoute,
+  ChatRoute: ChatRoute,
+  DashboardRoute: DashboardRoute,
+  AdminHealthRoute: AdminHealthRoute,
+  AdminLlmConfigRoute: AdminLlmConfigRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  ApplicationsApplicationIdRoute: ApplicationsApplicationIdRoute,
+  ApplicationsNewRoute: ApplicationsNewRoute,
+  LoansLoanIdRoute: LoansLoanIdRoute,
+  ServicerAnalyticsRoute: ServicerAnalyticsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  ApplicationsIndexRoute: ApplicationsIndexRoute,
+  LoansIndexRoute: LoansIndexRoute,
+  ServicerIndexRoute: ServicerIndexRoute,
+  ServicerReviewApplicationIdRoute: ServicerReviewApplicationIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

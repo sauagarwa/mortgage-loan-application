@@ -23,6 +23,15 @@ _rate_limits: dict[str, list[float]] = {}
 
 
 @dataclass
+class ToolCall:
+    """A tool/function call from the LLM."""
+
+    id: str
+    name: str
+    arguments: str  # JSON string
+
+
+@dataclass
 class LLMResponse:
     """Standardized response from any LLM provider."""
 
@@ -34,6 +43,8 @@ class LLMResponse:
     total_tokens: int = 0
     latency_ms: int = 0
     raw_response: dict[str, Any] = field(default_factory=dict)
+    tool_calls: list[ToolCall] = field(default_factory=list)
+    finish_reason: str = "stop"
 
 
 @dataclass
@@ -72,8 +83,9 @@ def get_provider_from_db(provider_name: str | None = None) -> LLMProviderConfig 
         Provider config or None if not found/inactive.
     """
     try:
-        from ..worker.db import get_sync_session
         from db import LLMConfig
+
+        from ..worker.db import get_sync_session
 
         with get_sync_session() as session:
             if provider_name:
@@ -131,10 +143,11 @@ def _check_rate_limit(provider: str, rpm: int) -> bool:
 
 def _call_openai_compatible(
     config: LLMProviderConfig,
-    messages: list[dict[str, str]],
+    messages: list[dict[str, Any]],
     temperature: float | None = None,
     max_tokens: int | None = None,
     response_format: dict | None = None,
+    tools: list[dict[str, Any]] | None = None,
 ) -> LLMResponse:
     """Call an OpenAI-compatible API (OpenAI, local, vLLM, etc.)."""
     url = f"{config.base_url.rstrip('/')}/chat/completions"
@@ -152,6 +165,8 @@ def _call_openai_compatible(
     }
     if response_format:
         payload["response_format"] = response_format
+    if tools:
+        payload["tools"] = tools
 
     start = time.time()
     with httpx.Client(timeout=120.0) as client:
@@ -162,7 +177,21 @@ def _call_openai_compatible(
     data = resp.json()
 
     usage = data.get("usage", {})
-    content = data["choices"][0]["message"]["content"]
+    message = data["choices"][0]["message"]
+    content = message.get("content") or ""
+    finish_reason = data["choices"][0].get("finish_reason", "stop")
+
+    # Parse tool calls if present
+    parsed_tool_calls = []
+    if message.get("tool_calls"):
+        for tc in message["tool_calls"]:
+            parsed_tool_calls.append(
+                ToolCall(
+                    id=tc["id"],
+                    name=tc["function"]["name"],
+                    arguments=tc["function"]["arguments"],
+                )
+            )
 
     return LLMResponse(
         content=content,
@@ -173,15 +202,18 @@ def _call_openai_compatible(
         total_tokens=usage.get("total_tokens", 0),
         latency_ms=latency_ms,
         raw_response=data,
+        tool_calls=parsed_tool_calls,
+        finish_reason=finish_reason,
     )
 
 
 def _call_anthropic(
     config: LLMProviderConfig,
-    messages: list[dict[str, str]],
+    messages: list[dict[str, Any]],
     temperature: float | None = None,
     max_tokens: int | None = None,
     response_format: dict | None = None,
+    tools: list[dict[str, Any]] | None = None,
 ) -> LLMResponse:
     """Call the Anthropic Messages API."""
     url = f"{config.base_url.rstrip('/')}/v1/messages"
@@ -209,6 +241,17 @@ def _call_anthropic(
     if system_msg:
         payload["system"] = system_msg
 
+    # Convert OpenAI tool format to Anthropic format
+    if tools:
+        anthropic_tools = []
+        for tool in tools:
+            anthropic_tools.append({
+                "name": tool["function"]["name"],
+                "description": tool["function"].get("description", ""),
+                "input_schema": tool["function"].get("parameters", {"type": "object"}),
+            })
+        payload["tools"] = anthropic_tools
+
     start = time.time()
     with httpx.Client(timeout=120.0) as client:
         resp = client.post(url, json=payload, headers=headers)
@@ -218,10 +261,29 @@ def _call_anthropic(
     data = resp.json()
 
     usage = data.get("usage", {})
-    content = data["content"][0]["text"]
+    finish_reason = data.get("stop_reason", "end_turn")
+
+    # Parse content and tool_use blocks
+    content_parts = []
+    parsed_tool_calls = []
+    for block in data.get("content", []):
+        if block["type"] == "text":
+            content_parts.append(block["text"])
+        elif block["type"] == "tool_use":
+            parsed_tool_calls.append(
+                ToolCall(
+                    id=block["id"],
+                    name=block["name"],
+                    arguments=json.dumps(block["input"]),
+                )
+            )
+
+    # Map Anthropic stop reasons to OpenAI finish reasons
+    if finish_reason == "tool_use":
+        finish_reason = "tool_calls"
 
     return LLMResponse(
-        content=content,
+        content="\n".join(content_parts),
         provider=config.provider,
         model=config.model,
         prompt_tokens=usage.get("input_tokens", 0),
@@ -229,6 +291,8 @@ def _call_anthropic(
         total_tokens=usage.get("input_tokens", 0) + usage.get("output_tokens", 0),
         latency_ms=latency_ms,
         raw_response=data,
+        tool_calls=parsed_tool_calls,
+        finish_reason=finish_reason,
     )
 
 
@@ -241,12 +305,13 @@ _PROVIDER_CALLERS = {
 
 
 def call_llm(
-    messages: list[dict[str, str]],
+    messages: list[dict[str, Any]],
     provider_name: str | None = None,
     temperature: float | None = None,
     max_tokens: int | None = None,
     response_format: dict | None = None,
     fallback: bool = True,
+    tools: list[dict[str, Any]] | None = None,
 ) -> LLMResponse:
     """Call an LLM provider with automatic fallback.
 
@@ -257,6 +322,7 @@ def call_llm(
         max_tokens: Override max tokens.
         response_format: Optional response format (e.g. {"type": "json_object"}).
         fallback: Whether to try fallback providers on failure.
+        tools: Optional list of tool definitions in OpenAI format.
 
     Returns:
         LLMResponse with content and metadata.
@@ -308,6 +374,7 @@ def call_llm(
                 temperature=temperature,
                 max_tokens=max_tokens,
                 response_format=response_format,
+                tools=tools,
             )
             logger.info(
                 f"LLM call successful: provider={provider}, model={provider_config.model}, "

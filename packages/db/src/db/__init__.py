@@ -5,12 +5,14 @@ from .database import Base, DatabaseService, get_db, get_db_service
 from .models import (
     Application,
     AuditLog,
+    Conversation,
     CreditReport,
     Decision,
     Document,
     InfoRequest,
     LLMConfig,
     LoanProduct,
+    Message,
     Notification,
     RiskAssessment,
     RiskDimensionScore,
@@ -34,5 +36,7 @@ __all__ = [
     "LLMConfig",
     "AuditLog",
     "Notification",
+    "Conversation",
+    "Message",
     "__version__",
 ]

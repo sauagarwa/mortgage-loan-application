@@ -9,7 +9,19 @@ from .admin import setup_admin
 from .core.config import settings
 from .middleware.audit import AuditMiddleware
 from .routes import admin as admin_routes
-from .routes import applications, audit, auth, decisions, documents, health, loans, notifications, servicer, ws
+from .routes import (
+    applications,
+    audit,
+    auth,
+    chat,
+    decisions,
+    documents,
+    health,
+    loans,
+    notifications,
+    servicer,
+    ws,
+)
 from .services.websocket_manager import manager as ws_manager
 
 app = FastAPI(
@@ -41,6 +53,7 @@ app.include_router(
 app.include_router(servicer.router, prefix="/api/v1/servicer", tags=["servicer"])
 app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
 app.include_router(audit.router, prefix="/api/v1/audit-logs", tags=["audit"])
+app.include_router(chat.router, prefix="/api/v1/chat", tags=["chat"])
 app.include_router(ws.router, prefix="/api/v1/ws", tags=["websocket"])
 app.include_router(admin_routes.router, prefix="/api/v1/admin", tags=["admin"])
 

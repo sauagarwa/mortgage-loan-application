@@ -6,6 +6,7 @@ import {
   FileText,
   Home,
   LayoutDashboard,
+  MessageSquare,
   ScrollText,
   Settings,
   Users,
@@ -21,6 +22,11 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Home', to: '/', icon: <Home className="h-4 w-4" /> },
+  {
+    label: 'New Application',
+    to: '/chat',
+    icon: <MessageSquare className="h-4 w-4" />,
+  },
   {
     label: 'Dashboard',
     to: '/dashboard',
