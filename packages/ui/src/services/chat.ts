@@ -22,6 +22,7 @@ export function sendChatMessage(
   const controller = new AbortController();
 
   (async () => {
+    let doneHandled = false;
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/chat/sessions/${sessionId}/messages`, {
         method: 'POST',
@@ -60,6 +61,7 @@ export function sendChatMessage(
             try {
               const data = JSON.parse(dataStr);
               if (currentEvent === 'done') {
+                doneHandled = true;
                 onDone();
               } else if (currentEvent) {
                 onEvent(currentEvent, data);
@@ -72,7 +74,7 @@ export function sendChatMessage(
         }
       }
 
-      onDone();
+      if (!doneHandled) onDone();
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
       onError(err instanceof Error ? err : new Error(String(err)));

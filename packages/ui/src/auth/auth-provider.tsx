@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -43,7 +44,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
+  const initCalled = useRef(false);
+
   useEffect(() => {
+    if (initCalled.current) return;
+    initCalled.current = true;
+
     keycloak
       .init({
         onLoad: 'check-sso',

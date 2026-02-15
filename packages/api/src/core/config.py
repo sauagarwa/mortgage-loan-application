@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     ALLOWED_HOSTS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 
     # Database settings
-    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/mortgage-ai"
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5434/mortgage-ai"
 
     # Keycloak settings
     KEYCLOAK_SERVER_URL: str = "http://localhost:8080"

@@ -2,18 +2,21 @@
 Database configuration and utilities
 """
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
 from typing import Dict, Any
 import logging
 from datetime import datetime, timezone
 
-DATABASE_URL = "postgresql+asyncpg://user:password@localhost:5432/mortgage-ai"
+import os
+
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL", "postgresql+asyncpg://user:password@localhost:5434/mortgage-ai"
+)
 
 engine = create_async_engine(DATABASE_URL, echo=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
+SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 Base = declarative_base()
 

@@ -646,12 +646,33 @@ async def handle_chat_message(
     max_iterations = 8
 
     for _ in range(max_iterations):
-        response = call_llm(
-            messages=llm_messages,
-            tools=TOOLS,
-            temperature=0.4,
-            max_tokens=2048,
-        )
+        try:
+            response = call_llm(
+                messages=llm_messages,
+                tools=TOOLS,
+                temperature=0.4,
+                max_tokens=2048,
+            )
+        except Exception as e:
+            logger.error(f"LLM call failed: {e}")
+            error_content = (
+                "I'm sorry, I'm having trouble connecting to my AI backend right now. "
+                "Please try again in a moment. If this persists, check that the LLM "
+                "service is configured correctly."
+            )
+            all_events.append(
+                ChatEvent(event_type="text", data={"content": error_content})
+            )
+            error_msg = Message(
+                conversation_id=conversation.id,
+                role="assistant",
+                content=error_content,
+                message_type="text",
+            )
+            session.add(error_msg)
+            await session.flush()
+            all_events.append(ChatEvent(event_type="done", data={}))
+            return all_events
 
         if response.tool_calls:
             # Save assistant message with tool calls
