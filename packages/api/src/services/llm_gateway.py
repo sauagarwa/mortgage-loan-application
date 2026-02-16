@@ -7,7 +7,9 @@ Handles provider selection, fallback, token tracking, and rate limiting.
 
 import json
 import logging
+import re
 import time
+import uuid as uuid_mod
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -17,6 +19,7 @@ from sqlalchemy import select
 from ..core.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 # Rate limiter: simple in-memory token bucket per provider
 _rate_limits: dict[str, list[float]] = {}
@@ -29,6 +32,86 @@ class ToolCall:
     id: str
     name: str
     arguments: str  # JSON string
+
+
+def _parse_text_tool_calls(
+    content: str,
+    tools: list[dict[str, Any]] | None,
+) -> tuple[str, list[ToolCall]]:
+    """Extract tool calls embedded as text when the model lacks native tool-calling support.
+
+    Many open-source models (e.g. Llama) output tool calls as text like
+    ``[get_loan_products()]`` or ``[check_eligibility({"credit_score": 670})]``
+    instead of returning structured ``tool_calls`` in the API response.
+
+    This function detects those patterns, extracts them as proper ToolCall objects,
+    and returns the cleaned content (with tool-call text removed).
+
+    Args:
+        content: The raw text content from the LLM response.
+        tools: The tool definitions that were sent to the model (used to validate
+               that extracted names are real tools).
+
+    Returns:
+        Tuple of (cleaned_content, list_of_tool_calls).
+    """
+    if not tools or not content:
+        return content, []
+
+    # Build set of valid tool names
+    valid_names = {t["function"]["name"] for t in tools}
+
+    # Pattern: [tool_name()] or [tool_name({"key": "val", ...})]
+    # The argument part is optional and can be a JSON object or empty.
+    pattern = re.compile(
+        r"\[([a-z_][a-z0-9_]*)\(\s*(.*?)\s*\)\]",
+        re.DOTALL,
+    )
+
+    parsed: list[ToolCall] = []
+    spans_to_remove: list[tuple[int, int]] = []
+    for match in pattern.finditer(content):
+        name = match.group(1)
+        raw_args = match.group(2).strip()
+
+        if name not in valid_names:
+            continue
+
+        # Parse arguments
+        if not raw_args:
+            args = {}
+        else:
+            try:
+                args = json.loads(raw_args)
+            except json.JSONDecodeError:
+                logger.warning(f"Could not parse args for text tool call {name}: {raw_args}")
+                args = {}
+
+        parsed.append(
+            ToolCall(
+                id=f"call_{uuid_mod.uuid4().hex[:8]}",
+                name=name,
+                arguments=json.dumps(args),
+            )
+        )
+        spans_to_remove.append(match.span())
+
+    if not parsed:
+        return content, []
+
+    # Remove only the matched tool-call spans from content (in reverse to preserve indices)
+    cleaned = content
+    for start, end in reversed(spans_to_remove):
+        cleaned = cleaned[:start] + cleaned[end:]
+    cleaned = cleaned.strip()
+    # Collapse any resulting multiple blank lines
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+
+    logger.info(
+        f"Extracted {len(parsed)} text-based tool call(s) from LLM response: "
+        f"{[tc.name for tc in parsed]}"
+    )
+    return cleaned, parsed
 
 
 @dataclass
@@ -192,6 +275,13 @@ def _call_openai_compatible(
                     arguments=tc["function"]["arguments"],
                 )
             )
+
+    # Fallback: extract tool calls from text when the model lacks native
+    # tool-calling support (common with local/open-source models).
+    if not parsed_tool_calls and tools and content:
+        content, parsed_tool_calls = _parse_text_tool_calls(content, tools)
+        if parsed_tool_calls:
+            finish_reason = "tool_calls"
 
     return LLMResponse(
         content=content,
