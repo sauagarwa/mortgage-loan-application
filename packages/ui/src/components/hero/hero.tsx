@@ -1,3 +1,7 @@
+import { Link } from '@tanstack/react-router';
+import { Button } from '../atoms/button/button';
+import { FileText, LogIn } from 'lucide-react';
+
 export function Hero() {
   return (
     <section className="relative overflow-hidden rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
@@ -7,13 +11,33 @@ export function Hero() {
       >
         <div className="mx-auto h-full max-w-6xl bg-gradient-to-tr from-sky-500/10 via-violet-500/10 to-fuchsia-500/10 blur-2xl" />
       </div>
-      <div className="relative z-10 flex flex-col gap-3">
+      <div className="relative z-10 flex flex-col gap-4">
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Welcome to the MortgageAI Template!
+          Welcome to Mortgage AI
         </h1>
-        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-          This template has everything you need to develop your own MortgageAI quickly and easily. Check out our documentation for instructions on how to get started.
-        </p>
+        <div className="max-w-2xl space-y-2 text-sm leading-6 text-muted-foreground">
+          <p>
+            <strong>Applicants:</strong> Click <em>Apply Now</em> to start a new mortgage application.
+            You can track your application status or view documents by logging in.
+          </p>
+          <p>
+            <strong>Reviewers:</strong> Log in to review and manage mortgage applications.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3 pt-1">
+          <Link to="/chat">
+            <Button size="lg">
+              <FileText />
+              Apply Now
+            </Button>
+          </Link>
+          <Link to="/applications">
+            <Button variant="outline" size="lg">
+              <LogIn />
+              Track My Application
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );

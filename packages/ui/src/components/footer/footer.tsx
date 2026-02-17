@@ -7,7 +7,7 @@ export function Footer() {
         <div className="flex items-center gap-0">
           <Logo />
           <span className="font-medium text-foreground">
-            Built with the <span className="font-bold">MortgageAI Template</span>
+            Powered by <span className="font-bold">Mortgage AI</span>
           </span>
         </div>
         <div className="flex items-center gap-3">

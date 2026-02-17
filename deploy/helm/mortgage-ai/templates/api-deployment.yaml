@@ -109,12 +109,15 @@ spec:
               port: http
             initialDelaySeconds: {{ .Values.api.healthCheck.initialDelaySeconds }}
             periodSeconds: {{ .Values.api.healthCheck.periodSeconds }}
+            timeoutSeconds: 10
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: {{ .Values.api.healthCheck.path }}
               port: http
             initialDelaySeconds: {{ .Values.api.healthCheck.initialDelaySeconds }}
             periodSeconds: {{ .Values.api.healthCheck.periodSeconds }}
+            timeoutSeconds: 10
           {{- end }}
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}

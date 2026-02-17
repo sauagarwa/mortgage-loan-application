@@ -18,7 +18,7 @@ spec:
         app.kubernetes.io/name: {{ .Values.worker.name }}
         app.kubernetes.io/component: worker
     spec:
-      {{- include "mortgage-ai.serviceAccountName" . | nindent 6 }}
+      serviceAccountName: {{ include "mortgage-ai.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

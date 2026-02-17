@@ -40,6 +40,10 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY packages/api/src/ ./packages/api/src/
 COPY packages/api/pyproject.toml ./packages/api/
 
+# Copy DB package source (editable install references it at /app/packages/db)
+COPY packages/db/src/ ./packages/db/src/
+COPY packages/db/pyproject.toml ./packages/db/
+
 # Set working directory to API package
 WORKDIR /app/packages/api
 

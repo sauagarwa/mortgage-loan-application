@@ -1,0 +1,57 @@
+# Multi-stage build for database migration job
+# Stage 1: Build dependencies
+FROM python:3.11-slim AS builder
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Set working directory
+WORKDIR /app
+
+# Copy DB package
+COPY packages/db/ ./packages/db/
+
+# Change to DB directory for installation
+WORKDIR /app/packages/db
+
+# Install dependencies
+RUN uv pip install --system -e .
+
+# Stage 2: Runtime
+FROM python:3.11-slim AS runtime
+
+# Create non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy DB package source, alembic config, migrations, and seeds
+COPY packages/db/src/ ./packages/db/src/
+COPY packages/db/pyproject.toml ./packages/db/
+COPY packages/db/alembic.ini ./packages/db/
+COPY packages/db/alembic/ ./packages/db/alembic/
+COPY packages/db/seeds/ ./packages/db/seeds/
+
+# Copy startup script
+COPY packages/db/startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
+
+# Set working directory to DB package
+WORKDIR /app/packages/db
+
+# Set PYTHONPATH so alembic env.py can find the db module
+ENV PYTHONPATH="/app/packages/db/src"
+
+# Set ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Run the startup script
+CMD ["/app/startup.sh"]

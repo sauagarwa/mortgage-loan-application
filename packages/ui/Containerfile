@@ -22,21 +22,21 @@ RUN corepack enable && corepack prepare pnpm@latest --activate || npm install -g
 # Use --no-frozen-lockfile since lockfiles may not exist in container builds
 RUN pnpm install --no-frozen-lockfile || npm install || yarn install
 
+# Accept API base URL as a build arg so it gets baked into the static assets
+ARG VITE_API_BASE_URL=""
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 # Build the UI application
 WORKDIR /app/packages/ui
-RUN pnpm build || npm run build || yarn build
+RUN pnpm exec vite build
 
 # Stage 2: Serve with nginx
 FROM nginx:alpine AS runtime
 
-# Create non-root user
-RUN addgroup -g 1001 -S appuser && \
-    adduser -S appuser -u 1001
-
 # Copy built assets from builder
 COPY --from=builder /app/packages/ui/dist /usr/share/nginx/html
 
-# Copy nginx configuration
+# Copy nginx configuration (listen on 8080, no user directive for OpenShift compat)
 RUN echo 'server { \
     listen 8080; \
     server_name _; \
@@ -53,27 +53,21 @@ RUN echo 'server { \
         expires 1y; \
         add_header Cache-Control "public, immutable"; \
     } \
-}' > /etc/nginx/conf.d/default.conf
+}' > /etc/nginx/conf.d/default.conf && \
+    # Remove 'user nginx' directive so nginx works as non-root
+    sed -i 's/^user  nginx;/#user  nginx;/' /etc/nginx/nginx.conf && \
+    # Write pid to a writable location
+    sed -i 's|/run/nginx.pid|/tmp/nginx.pid|' /etc/nginx/nginx.conf
 
-# Set ownership
-RUN chown -R appuser:appuser /usr/share/nginx/html && \
-    chown -R appuser:appuser /var/cache/nginx && \
-    chown -R appuser:appuser /var/log/nginx && \
-    chown -R appuser:appuser /etc/nginx/conf.d
-
-# Create nginx pid directory
-RUN mkdir -p /var/run/nginx && \
-    chown -R appuser:appuser /var/run/nginx
-
-# Switch to non-root user
-USER appuser
+# Make directories writable by arbitrary UIDs (OpenShift runs as random UID with GID 0)
+RUN chmod -R g+rwx /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx/conf.d && \
+    chgrp -R 0 /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx/conf.d
 
 # Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+# Run as non-root (OpenShift will assign a random UID)
+USER 1001
 
 # Run nginx
 CMD ["nginx", "-g", "daemon off;"]
